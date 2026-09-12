@@ -56,7 +56,7 @@ class ArticleController extends Controller implements HasMiddleware
         $article = Article::create([
             'title' => $request->title,
             'subtitle' => $request->subtitle,
-            'body' => $request->body,
+            'body' => strip_tags($request->body, '<p><br><strong><em><ul><ol><li><a>'),
             'image' => $request->file('image')->store('public/images'),
             'category_id' => $request->category,
             'user_id' => Auth::user()->id,
