@@ -62,7 +62,13 @@ class ArticleController extends Controller implements HasMiddleware
             'user_id' => Auth::user()->id,
             'slug' => Str::slug($request->title),
         ]);
-        
+        Log::info('ARTICOLO CREATO', [
+        'user_id' => Auth::id(),
+        'article_id' => $article->id,
+        'article_title' => $article->title,
+        'ip' => $request->ip(),
+        ]);
+
         $tags = explode(',', $request->tags);
 
         foreach($tags as $i => $tag){
@@ -119,6 +125,12 @@ class ArticleController extends Controller implements HasMiddleware
             'category_id' => $request->category,
             'slug' => Str::slug($request->title),
         ]);
+        Log::info('ARTICOLO MODIFICATO', [
+        'user_id' => Auth::id(),
+        'article_id' => $article->id,
+        'article_title' => $article->title,
+        'ip' => $request->ip(),
+        ]);
 
         if($request->image){
             Storage::delete($article->image);
@@ -126,7 +138,7 @@ class ArticleController extends Controller implements HasMiddleware
                 'image' => $request->file('image')->store('public/images')
             ]);
         }
-        
+
         $tags = explode(',', $request->tags);
 
         foreach($tags as $i => $tag){
@@ -151,11 +163,18 @@ class ArticleController extends Controller implements HasMiddleware
      */
     public function destroy(Article $article)
     {
-        foreach ($article->tags as $tag) {
+        Log::info('ARTICOLO CANCELLATO', [
+        'user_id' => Auth::id(),
+        'article_id' => $article->id,
+        'article_title' => $article->title,
+        'ip' => request()->ip(),
+    ]);
+
+    foreach ($article->tags as $tag) {
             $article->tags()->detach($tag);
         }
         $article->delete();
-        
+
         return redirect()->back()->with('message', 'Articolo cancellato con successo');
     }
 
@@ -163,7 +182,7 @@ class ArticleController extends Controller implements HasMiddleware
         $articles = $category->articles()->where('is_accepted', true)->orderBy('created_at', 'desc')->get();
         return view('articles.by-category', compact('category', 'articles'));
     }
-    
+
     public function byUser(User $user){
         $articles = $user->articles()->where('is_accepted', true)->orderBy('created_at', 'desc')->get();
         return view('articles.by-user', compact('user', 'articles'));
