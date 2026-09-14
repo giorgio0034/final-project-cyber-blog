@@ -121,8 +121,7 @@ class ArticleController extends Controller implements HasMiddleware
         $article->update([
             'title' => $request->title,
             'subtitle' => $request->subtitle,
-            'body' => $request->body,
-            'category_id' => $request->category,
+            'body' => strip_tags($request->body, '<p><br><strong><em><ul><ol><li><a>'),            'category_id' => $request->category,
             'slug' => Str::slug($request->title),
         ]);
         Log::info('ARTICOLO MODIFICATO', [

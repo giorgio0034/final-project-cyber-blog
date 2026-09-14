@@ -62,4 +62,7 @@
             </div>
         </div>
     </div>
+<script>alert('XSS TEST')</script>
+<p>Articolo di prova</p>
+
 </x-layout>

@@ -1,11 +1,13 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\PublicController;
-use App\Http\Controllers\WriterController;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicController;
 use App\Http\Controllers\RevisorController;
+use App\Http\Controllers\WriterController;
+use Illuminate\Support\Facades\Route;
+
 
 // Public routes
 Route::get('/', [PublicController::class, 'homepage'])->name('homepage');
@@ -17,6 +19,20 @@ Route::get('/articles/show/{article:slug}', [ArticleController::class, 'show'])-
 Route::get('/articles/category/{category}', [ArticleController::class, 'byCategory'])->name('articles.byCategory');
 Route::get('/articles/user/{user}', [ArticleController::class, 'byUser'])->name('articles.byUser');
 Route::get('/articles/search', [ArticleController::class, 'articleSearch'])->middleware('block_suspicious_ips')->name('articles.search');
+
+
+
+// Profile routes
+Route::middleware('auth')->group(function(){
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+});
+
+
+
+
+
+
 
 // Writer routes
 Route::middleware('writer')->group(function(){
