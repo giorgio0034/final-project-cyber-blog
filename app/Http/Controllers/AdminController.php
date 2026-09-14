@@ -70,69 +70,140 @@ class AdminController extends Controller
         return redirect(route('admin.dashboard'))->with('message', "$user->name is now administrator");
     }
 
-    public function setRevisor(User $user){
-        $user->is_revisor = true;
-        $user->save();
+public function setRevisor(User $user){
+    $user->is_revisor = true;
+    $user->save();
 
-        return redirect(route('admin.dashboard'))->with('message', "$user->name is now revisor");
+    Log::info('CAMBIO RUOLO UTENTE', [
+        'admin_id' => Auth::id(),
+        'target_user_id' => $user->id,
+        'target_user_name' => $user->name,
+        'new_role' => 'revisor',
+        'ip' => request()->ip(),
+    ]);
+
+    return redirect(route('admin.dashboard'))->with('message', "$user->name is now revisor");
+}
+public function setWriter(User $user){
+    $user->is_writer = true;
+    $user->save();
+
+    Log::info('CAMBIO RUOLO UTENTE', [
+        'admin_id' => Auth::id(),
+        'target_user_id' => $user->id,
+        'target_user_name' => $user->name,
+        'new_role' => 'writer',
+        'ip' => request()->ip(),
+    ]);
+
+    return redirect(route('admin.dashboard'))->with('message', "$user->name is now writer");
+}
+
+public function editTag(Request $request, Tag $tag){
+    $request->validate([
+        'name' => 'required|unique:tags',
+    ]);
+
+    $oldName = $tag->name;
+
+    $tag->update([
+        'name' => strtolower($request->name),
+    ]);
+
+    Log::info('TAG MODIFICATO', [
+        'admin_id' => Auth::id(),
+        'tag_id' => $tag->id,
+        'old_name' => $oldName,
+        'new_name' => $tag->name,
+        'ip' => request()->ip(),
+    ]);
+
+    return redirect()->back()->with('message', 'Tag successfully updated');
+}
+public function deleteTag(Tag $tag){
+    $tagName = $tag->name;
+    $tagId = $tag->id;
+
+    foreach($tag->articles as $article){
+        $article->tags()->detach($tag);
     }
 
-    public function setWriter(User $user){
-        $user->is_writer = true;
-        $user->save();
+    $tag->delete();
 
-        return redirect(route('admin.dashboard'))->with('message', "$user->name is now writer");
-    }
+    Log::info('TAG ELIMINATO', [
+        'admin_id' => Auth::id(),
+        'tag_id' => $tagId,
+        'tag_name' => $tagName,
+        'ip' => request()->ip(),
+    ]);
 
-    public function editTag(Request $request, Tag $tag){
-        $request->validate([
-            'name' => 'required|unique:tags',
-        ]);
-        $tag->update([
-            'name' => strtolower($request->name),
-        ]);
-        return redirect()->back()->with('message', 'Tag successfully updated');
-    }
-
-    public function deleteTag(Tag $tag){
-        foreach($tag->articles as $article){
-            $article->tags()->detach($tag);
-        }
-        $tag->delete();
-
-        return redirect()->back()->with('message', 'Tag successfully deleted');
-    }
+    return redirect()->back()->with('message', 'Tag successfully deleted');
+}
 
     public function editCategory(Request $request, Category $category){
-        $request->validate([
-            'name' => 'required|unique:categories',
-        ]);
-        $category->update([
-            'name' => strtolower($request->name),
-        ]);
+    $request->validate([
+        'name' => 'required|unique:categories',
+    ]);
 
-        return redirect()->back()->with('message', 'Category successfully updated');
-    }
+    $oldName = $category->name;
 
-    public function deleteCategory(Category $category){
-        $category->delete();
+    $category->update([
+        'name' => strtolower($request->name),
+    ]);
 
-        return redirect()->back()->with('message', 'Category successfully deleted');
-    }
+    Log::info('CATEGORIA MODIFICATA', [
+        'admin_id' => Auth::id(),
+        'category_id' => $category->id,
+        'old_name' => $oldName,
+        'new_name' => $category->name,
+        'ip' => request()->ip(),
+    ]);
 
-    public function storeCategory(Request $request){
-        $category = Category::create([
-            'name' => strtolower($request->name),
-        ]);
+    return redirect()->back()->with('message', 'Category successfully updated');
+}
+public function deleteCategory(Category $category){
+    $categoryName = $category->name;
+    $categoryId = $category->id;
 
-        return redirect()->back()->with('message', 'Category successfully created');
-    }
+    $category->delete();
 
-    public function storeTag(Request $request){
-        $tag = Tag::create([
-            'name' => strtolower($request->name),
-        ]);
+    Log::info('CATEGORIA ELIMINATA', [
+        'admin_id' => Auth::id(),
+        'category_id' => $categoryId,
+        'category_name' => $categoryName,
+        'ip' => request()->ip(),
+    ]);
 
-        return redirect()->back()->with('message', 'Tag successfully created');
-    }
+    return redirect()->back()->with('message', 'Category successfully deleted');
+}
+
+public function storeCategory(Request $request){
+    $category = Category::create([
+        'name' => strtolower($request->name),
+    ]);
+
+    Log::info('CATEGORIA CREATA', [
+        'admin_id' => Auth::id(),
+        'category_id' => $category->id,
+        'category_name' => $category->name,
+        'ip' => request()->ip(),
+    ]);
+
+    return redirect()->back()->with('message', 'Category successfully created');
+}
+
+public function storeTag(Request $request){
+    $tag = Tag::create([
+        'name' => strtolower($request->name),
+    ]);
+
+    Log::info('TAG CREATO', [
+        'admin_id' => Auth::id(),
+        'tag_id' => $tag->id,
+        'tag_name' => $tag->name,
+        'ip' => request()->ip(),
+    ]);
+
+    return redirect()->back()->with('message', 'Tag successfully created');
+}
 }
